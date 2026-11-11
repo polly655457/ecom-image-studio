@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>电商图片工作台</title>
+<style>
+  :root{--bg:#f7f8fb;--card:#fff;--line:#e8ecf3;--ink:#1f2937;--sub:#8490a3;
+    --blue:#2f6bff;--blue-l:#eaf1ff;--blue-b:#c9daff;--green-l:#e9f7ee;--green:#1a8f52;
+    --red-l:#fdeceb;--red:#c0504a;--amber-l:#fff6de;--amber:#a97a12;
+    --purple-l:#f2edff;--purple:#6b46c1}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  button,input,textarea,select{font-family:inherit;font-size:inherit;outline:none}
+  /* top bar */
+  .top{height:54px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+  .brand{display:flex;align-items:center;gap:9px}
+  .logo{background:#111827;color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:5px 8px;letter-spacing:.04em}
+  .brand b{font-size:15px;letter-spacing:-.01em}
+  .badge{font-size:10px;background:#eef1f6;color:#64748b;border-radius:4px;padding:2px 6px}
+  .badge.dark{background:#111827;color:#fff}
+  .topnav{display:flex;align-items:center;gap:18px;color:#6b7688;font-size:12px}
+  .topnav a{color:var(--blue);text-decoration:none;cursor:pointer}
+  .topnav span{cursor:pointer}
+  .iconbtn{border:1px solid var(--line);background:#fff;border-radius:7px;width:29px;height:29px;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7688;font-size:13px}
+  .iconbtn:hover{border-color:#c9d5e8;color:var(--blue)}
+  /* header */
+  .page{max-width:1440px;margin:0 auto;padding:20px 22px 40px}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .head h1{font-size:15px;margin:0 0 3px}
+  .crumb{font-size:11.5px;color:var(--sub)}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  select,.mini{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 9px;color:#475569;font-size:12px}
+  select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #dbe7ff}
+  .seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .seg button{border:none;background:#fff;padding:6px 11px;font-size:12px;color:#64748b;cursor:pointer}
+  .seg button.on{background:var(--blue);color:#fff}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;
+    color:#475569;cursor:pointer}
+  .btn:hover{border-color:#c9d5e8;color:var(--blue)}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:#2458e0;color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .quota{font-size:11.5px;color:#475569;background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px}
+  .quota b{color:var(--blue)}
+  /* tabs */
+  .tabs{display:flex;gap:7px;margin:16px 0 14px}
+  .tab{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 14px;font-size:12px;
+    color:#64748b;cursor:pointer}
+  .tab.on{border-color:var(--blue-b);background:var(--blue-l);color:var(--blue);font-weight:700}
+  /* 3 columns */
+  .cols{display:grid;grid-template-columns:minmax(290px,1.05fr) minmax(310px,1.1fr) minmax(250px,.86fr);gap:14px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+  .card h3{font-size:13px;margin:0 0 9px;display:flex;align-items:center;justify-content:space-between}
+  .card h3 .tiny{font-size:10.5px;color:var(--sub);font-weight:400}
+  .desc{font-size:11.5px;color:var(--sub);margin:0 0 10px;line-height:1.6}
+  .tip{background:var(--blue-l);border:1px solid var(--blue-b);color:#2450b8;border-radius:7px;
+    padding:8px 10px;font-size:11.5px;margin-bottom:11px;line-height:1.6}
+  .tip.warn{background:var(--amber-l);border-color:#f0dfa8;color:#8a6410}
+  label{display:block;font-size:11px;color:#6b7688;margin:0 0 5px;font-weight:600}
+  textarea,input[type=text],input[type=password]{width:100%;border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;font-size:12px;color:var(--ink);background:#fff}
+  textarea:focus,input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #dbe7ff}
+  textarea{resize:vertical;line-height:1.6}
+  .field{margin-bottom:10px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .airow{background:#f6f9ff;border:1px solid var(--blue-b);border-radius:8px;padding:10px;margin-top:10px}
+  .airow .kv{font-size:11.5px;color:#475569;margin-bottom:7px}
+  .airow .kv b{color:var(--blue)}
+  .airow .acts{display:flex;gap:7px}
+  .drop{border:1.5px dashed #d5ddea;border-radius:8px;padding:15px;text-align:center;color:var(--sub);
+    font-size:11.5px;cursor:pointer;background:#fcfdff}
+  .drop:hover{border-color:var(--blue);background:var(--blue-l)}
+  .refs{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .refs .t{position:relative;width:56px;height:56px;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .refs .t img{width:100%;height:100%;object-fit:cover}
+  .refs .t button{position:absolute;top:1px;right:1px;border:none;background:#fff;border-radius:4px;
+    font-size:11px;line-height:16px;cursor:pointer;padding:0 4px}
+  /* tag grid */
+  .tags{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .tag{border-radius:8px;padding:8px 10px;min-height:52px}
+  .tag .k{font-size:10.5px;opacity:.8;margin-bottom:2px}
+  .tag .v{font-size:11.5px;font-weight:700;line-height:1.45}
+  .tag.g{background:var(--green-l);color:var(--green)}
+  .tag.r{background:var(--red-l);color:var(--red)}
+  .tag.y{background:var(--amber-l);color:var(--amber)}
+  .tag.b{background:var(--blue-l);color:var(--blue)}
+  .tag.p{background:var(--purple-l);color:var(--purple)}
+  .preview{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+  .preview h3{font-size:12.5px;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+  .preview .meta{font-size:10.5px;color:var(--sub);font-weight:400}
+  .preview textarea{min-height:190px;background:#fbfcfe;font-size:11.5px}
+  /* right canvas */
+  .canvas{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;
+    flex-direction:column;min-height:560px}
+  .canvas .bar{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-bottom:9px}
+  .stage{flex:1;background:#f5f6f8;border:1px solid #eef0f4;border-radius:8px;display:flex;
+    align-items:center;justify-content:center;overflow:hidden;position:relative;min-height:340px}
+  .stage img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .stage .ph{color:#aeb8c7;font-size:11.5px;text-align:center;padding:20px;line-height:1.8}
+  .stage .spin{color:var(--blue);font-size:12px}
+  .params{margin-top:11px;border-top:1px solid var(--line);padding-top:11px}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .pgrid label{font-size:10px;margin-bottom:3px}
+  .pgrid select{width:100%;padding:5px 6px;font-size:11px}
+  .pgrid2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .round{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    color:#64748b;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center}
+  .round.go{background:var(--blue);border-color:var(--blue);color:#fff;width:38px;height:38px}
+  .round.go:hover{background:#2458e0}
+  .round:disabled{opacity:.45;cursor:not-allowed}
+  .msg{font-size:11px;color:#8a6410;background:var(--amber-l);border-radius:6px;padding:6px 8px;margin-top:9px}
+  .msg.err{color:#a33;background:var(--red-l)}
+  /* modal */
+  .mask{position:fixed;inset:0;background:rgba(17,24,39,.42);display:none;align-items:center;
+    justify-content:center;z-index:50;padding:20px}
+  .mask.on{display:flex}
+  .modal{background:#fff;border-radius:12px;width:min(520px,100%);padding:20px;max-height:88vh;overflow:auto}
+  .modal h2{font-size:16px;margin:0 0 4px}
+  .modal .sub{font-size:11.5px;color:var(--sub);margin:0 0 16px}
+  .modal .field{margin-bottom:12px}
+  .modal .seg{width:100%;margin-bottom:16px}
+  .modal .seg button{flex:1;padding:8px}
+  .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+  .fine{font-size:11px;color:var(--sub);line-height:1.7;background:#f8fafc;border-radius:8px;padding:10px;margin-top:12px}
+  code{background:#f1f5f9;border-radius:4px;padding:1px 5px;font-size:11px}
+  @media(max-width:1080px){.cols{grid-template-columns:1fr 1fr}.canvas{grid-column:1/-1;min-height:420px}}
+  @media(max-width:720px){.cols{grid-template-columns:1fr}.canvas{grid-column:auto}.topnav span{display:none}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <span class="logo">WB</span><b>电商图片工作台</b>
+    <span class="badge">开源</span><span class="badge dark">团队版</span>
+    <span class="badge">图片策划</span><span class="badge">AI 生图</span>
+  </div>
+  <div class="topnav">
+    <a id="navHelp">使用说明</a>
+    <span id="navDownload">下载</span>
+    <span id="navSettings">设置</span>
+    <button class="iconbtn" id="iconHelp" title="帮助">?</button>
+    <button class="iconbtn" id="iconSettings" title="设置">设</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="head">
+    <div>
+      <h1>电商图片工作台</h1>
+      <div class="crumb" id="crumb">团队共享额度 · 文生图 · 主题：Listing 套图策划</div>
+    </div>
+    <div class="toolbar">
+      <select id="modeSel" title="出图方式">
+        <option value="quota">共享额度（零配置）</option>
+        <option value="own">我的 API</option>
+      </select>
+      <select id="modelSel"><option>gpt-image-1</option><option>doubao-seedream</option><option>自定义</option></select>
+      <select id="countSel"><option>1 张</option><option>2 张</option><option>4 张</option></select>
+      <div class="seg" id="sizeSeg"><button data-s="1024x1024" class="on">2K</button><button data-s="1536x1024">4K 横</button><button data-s="1024x1536">4K 竖</button></div>
+      <span class="quota" id="quotaBox">额度 —</span>
+      <button class="btn" id="btnHistory">策划历史</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="listing">Listing 图</button>
+    <button class="tab" data-tab="aplus">A+ 图</button>
+  </div>
+
+  <div class="cols">
+    <!-- LEFT -->
+    <div>
+      <div class="card">
+        <h3>Listing 套图策划 <span class="tiny">可配置</span></h3>
+        <p class="desc">把商品信息、主图或全套 Listing 图片，生成符合平台规范的英文套图文案与生图提示词。</p>
+        <div class="tip" id="modeTip">正在检查共享额度配置…</div>
+        <div class="field">
+          <label>Title / 五点描述</label>
+          <textarea id="bullets" rows="7">Title: Insulated Stainless Steel Tumbler 500ml
+- Bullet 1: 304 stainless steel, double-wall vacuum
+- Bullet 2: Keeps drinks cold 24h / hot 12h
+- Bullet 3: Leak-proof lid, BPA free
+- Bullet 4: Fits standard cup holders
+- Bullet 5: Matte finish, easy to clean</textarea>
+        </div>
+        <div class="airow">
+          <div class="kv">AI 辅助：<b id="aiMode">共享额度</b> · <span id="aiModel">gpt-image-1</span></div>
+          <div class="acts">
+            <button class="btn primary" id="btnApply">APPLY</button>
+            <button class="btn" id="btnSettings2">设置</button>
+            <button class="btn" id="btnJob">导出任务包</button>
+          </div>
+        </div>
+        <div class="tip warn" style="margin:10px 0 0">真实在售商品：AI 生成画面不得当作实物外观；场景图通常不能当白底主图。文字与参数请走后期矢量层。</div>
+      </div>
+
+      <div class="card">
+        <h3>参考图 <span class="tiny">建议上传产品实拍图</span></h3>
+        <div class="drop" id="drop">上传产品参考图 · 支持多图 / 拖拽 / 粘贴</div>
+        <input type="file" id="fileRef" accept="image/*" multiple hidden>
+        <div class="refs" id="refs"></div>
+        <div class="fine" style="margin-top:10px">参考图会随任务包一起导出；共享额度与「我的 API」的文生图模式不直接上传参考图，图生图请用任务包模式交给 WorkBuddy。</div>
+      </div>
+
+      <div class="card">
+        <h3>PRODUCT PROFILE</h3>
+        <div class="row2">
+          <div class="field"><label>产品基础信息</label><input type="text" id="pName" value="真空保温杯 500ml"></div>
+          <div class="field"><label>类目</label><input type="text" id="pCat" value="Home / Kitchen"></div>
+          <div class="field"><label>目标站点</label><input type="text" id="pSite" value="亚马逊 US"></div>
+          <div class="field"><label>品牌合规</label><input type="text" id="pBrand" value="无品牌 / 中性"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE -->
+    <div>
+      <div class="tags">
+        <div class="tag g"><div class="k">目标站点</div><div class="v" id="tSite">亚马逊 US</div></div>
+        <div class="tag r"><div class="k">商品名称</div><div class="v" id="tName">真空保温杯 500ml</div></div>
+        <div class="tag g"><div class="k">图片规格</div><div class="v" id="tSize">1024×1024 · 方图</div></div>
+        <div class="tag y"><div class="k">参考图</div><div class="v" id="tRef">建议上传产品实拍图</div></div>
+        <div class="tag b"><div class="k">风格参考</div><div class="v">白底主图 / 清晨侧光场景</div></div>
+        <div class="tag p"><div class="k">品牌合规与风险备考</div><div class="v">不虚构 logo、配件、规格</div></div>
+      </div>
+      <div class="preview">
+        <h3>Prompt Preview <span class="meta" id="promptMeta">1024x1024 / PNG / auto / 1 张</span></h3>
+        <textarea id="prompt"></textarea>
+        <div class="fine" style="margin-top:10px">提示词由左侧商品信息自动组装。卖点文字、尺寸、规格<strong>不写进提示词</strong>，交给后期矢量层，避免 AI 写错汉字与数字。</div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="canvas">
+      <div class="bar"><span>画布预览</span><span id="stageMeta">—</span></div>
+      <div class="stage" id="stage"><div class="ph">点击右下角生成按钮<br>出图后会显示在这里</div></div>
+      <div class="params">
+        <div class="pgrid">
+          <div><label>尺寸</label><select id="pSize"><option>1024x1024</option><option>1536x1024</option><option>1024x1536</option></select></div>
+          <div><label>质量</label><select id="pQuality"><option>auto</option><option>high</option><option>medium</option><option>low</option></select></div>
+          <div><label>格式</label><select id="pFormat"><option>PNG</option><option>JPEG</option><option>WEBP</option></select></div>
+        </div>
+        <div class="pgrid2">
+          <div><label>宽度</label><select id="pWidth"><option>auto</option><option>70</option><option>85</option></select></div>
+          <div><label>数量</label><select id="pCount"><option>1</option><option>2</option><option>4</option></select></div>
+          <div><label>Negative</label><select id="pNeg"><option>标准</option><option>严格</option></select></div>
+        </div>
+        <div class="foot">
+          <button class="round" id="btnClear" title="清空画布">×</button>
+          <button class="round go" id="btnGo" title="生成">↑</button>
+        </div>
+        <div id="msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- settings modal -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <h2>设置</h2>
+    <p class="sub">选一种出图方式。设置只保存在你当前浏览器，不会上传。</p>
+    <div class="seg" id="modalSeg">
+      <button data-m="quota" class="on">共享额度（零配置）</button>
+      <button data-m="own">我的 API</button>
+    </div>
+
+    <div id="quotaFields">
+      <div class="field"><label>工号 / 昵称（用于每人额度计数）</label><input type="text" id="cfgUser" placeholder="例：zhangsan"></div>
+      <div class="fine">
+        共享额度由管理员统一付费，每人上限 <strong id="limitText">200</strong>。页面不接触任何密钥，
+        请求发到管理员部署的配额代理，由代理记账并转发到生图接口。
+        <strong>注意：这里消耗的是管理员 API 账户的费用，不是 WorkBuddy 积分。</strong>
+      </div>
+    </div>
+
+    <div id="ownFields" style="display:none">
+      <div class="field"><label>API Base URL</label><input type="text" id="cfgUrl" placeholder="https://api.openai.com/v1"></div>
+      <div class="field"><label>模型 ID</label><input type="text" id="cfgModel" placeholder="gpt-image-1"></div>
+      <div class="field"><label>API Key</label><input type="password" id="cfgKey" placeholder="只存本机浏览器"></div>
+      <div class="fine">Key 只存 localStorage，不进任务包、不进导出文件。不要把 Key 发给别人、不要截屏外传。接口需允许浏览器跨域，否则会报 CORS 错误。</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="btnClose">取消</button>
+      <button class="btn primary" id="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   管理员只需改这一行：填配额代理地址后，「共享额度」即可零配置使用。
+   留空时页面会提示同事切换到「我的 API」或导出任务包。
+   代理实现见同目录 quota-worker.js（Cloudflare Worker + KV）。
+   ============================================================ */
+const ADMIN_CONFIG = {
+  QUOTA_PROXY: "",
+  QUOTA_LIMIT: 200,
+  DEFAULT_MODEL: "gpt-image-1"
+};
+
+const state = {mode:"quota", tab:"listing", size:"1024x1024", refs:[], images:[], busy:false};
+const $ = id => document.getElementById(id);
+const LS = "ecom-image-studio-cfg";
+
+function cfgGet(){ try{ return JSON.parse(localStorage.getItem(LS)||"{}"); }catch(e){ return {}; } }
+function cfgSet(o){ localStorage.setItem(LS, JSON.stringify(o)); }
+function msg(t, err){ $("msg").className = "msg"+(err?" err":""); $("msg").textContent = t; if(!err) setTimeout(()=>{ if($("msg").textContent===t) $("msg").textContent=""; },5000); }
+function sizeLabel(s){ return s==="1024x1536"?"1024×1536 · 竖图":s==="1536x1024"?"1536×1024 · 横图":"1024×1024 · 方图"; }
+
+function buildPrompt(){
+  const b = $("bullets").value.trim();
+  const name = $("pName").value.trim(), cat = $("pCat").value.trim();
+  const site = $("pSite").value.trim(), brand = $("pBrand").value.trim();
+  const spec = state.tab==="aplus" ? "A+ 图文模块 / 品牌故事横版配图" : "Listing 主图 / 白底或场景套图";
+  const neg = $("pNeg").value==="严格"
+    ? "Negative Prompt: no text, no letters, no logo, no watermark, no price tag, no extra accessories, no distorted product shape."
+    : "Negative Prompt: no text, no watermark, no logo.";
+  return "["+spec+"] 目标站点："+site+"；类目："+cat+"；商品："+name+"；品牌合规："+brand+"。\n\n"
+    +"商品信息：\n"+b+"\n\n"
+    +"画面要求：商品主体清晰、留白充足便于后期叠加卖点文字；写实产品摄影质感；"
+    +"不得生成任何文字、字母、logo、水印或价签；不得虚构配件、logo 或规格。\n\n"+neg;
+}
+function sync(){
+  $("prompt").value = buildPrompt();
+  $("tSite").textContent = $("pSite").value.trim()||"—";
+  $("tName").textContent = $("pName").value.trim()||"—";
+  $("tSize").textContent = sizeLabel(state.size);
+  $("tRef").textContent = state.refs.length ? ("已上传 "+state.refs.length+" 张参考图") : "建议上传产品实拍图";
+  $("promptMeta").textContent = state.size+" / "+$("pFormat").value+" / "+$("pQuality").value+" / "+$("pCount").value+" 张";
+  $("stageMeta").textContent = state.images.length ? (state.images.length+" 张") : "—";
+  $("crumb").textContent = (state.mode==="quota"?"团队共享额度":"我的 API")+" · "+state.size+" · 主题："
+    +(state.tab==="aplus"?"A+ 图文策划":"Listing 套图策划");
+  $("aiMode").textContent = state.mode==="quota"?"共享额度":"我的 API";
+  $("aiModel").textContent = $("modelSel").value;
+}
+function setMode(m){
+  state.mode=m;
+  $("modeSel").value=m;
+  $("modalSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  $("quotaFields").style.display = m==="quota"?"":"none";
+  $("ownFields").style.display = m==="own"?"":"none";
+  refreshTip(); sync();
+}
+function refreshTip(){
+  const c=cfgGet();
+  if(state.mode==="own"){
+    $("modeTip").textContent = "我的 API 模式：填一次自己的 Base URL / 模型 / Key，点生成即可出图，费用自担。";
+    $("quotaBox").textContent = "额度 不限（自付）";
+  }else if(!ADMIN_CONFIG.QUOTA_PROXY){
+    $("modeTip").textContent = "管理员尚未配置共享额度代理。请点「设置」切换到「我的 API」，或用「导出任务包」交给 WorkBuddy 出图。";
+    $("quotaBox").textContent = "额度 未启用";
+  }else{
+    $("modeTip").textContent = "共享额度已启用：无需填 Key，点右下角生成按钮即可出图，每人上限 "+ADMIN_CONFIG.QUOTA_LIMIT+"。";
+    loadQuota();
+  }
+}
+async function loadQuota(){
+  const u=cfgGet().userId; if(!u||!ADMIN_CONFIG.QUOTA_PROXY) return;
+  try{
+    const r=await fetch(ADMIN_CONFIG.QUOTA_PROXY.replace(/\/+$/,"")+"/quota?userId="+encodeURIComponent(u));
+    const d=await r.json();
+    $("quotaBox").innerHTML = "额度 <b>"+(d.remaining!=null?d.remaining:"—")+"</b> / "+(d.limit||ADMIN_CONFIG.QUOTA_LIMIT);
+  }catch(e){ $("quotaBox").textContent="额度 读取失败"; }
+}
+function showStage(html){ $("stage").innerHTML=html; }
+function addImage(src, label){
+  state.images.push({src,label});
+  showStage('<img src="'+src+'" alt="生成结果">');
+  $("stageMeta").textContent = state.images.length+" 张";
+  msg("已生成 1 张 · "+label);
+}
+function proxyHeaders(userId){
+  return {"Content-Type":"application/json","X-User-Id":userId};
+}
+
+async function generate(){
+  if(state.busy) return;
+  const c=cfgGet();
+  const body={prompt:buildPrompt(),size:state.size,
+    quality:$("pQuality").value==="auto"?"high":$("pQuality").value,
+    format:$("pFormat").value,n:parseInt($("pCount").value||"1",10)};
+
+  if(state.mode==="quota"){
+    if(!ADMIN_CONFIG.QUOTA_PROXY){ msg("共享额度未配置：请切到「我的 API」，或点「导出任务包」交给 WorkBuddy 出图。",true); return; }
+    if(!c.userId){ msg("请先在「设置」里填工号，用于每人额度计数。",true); openModal(); return; }
+    state.busy=true; $("btnGo").disabled=true; showStage('<div class="spin">正在生成…</div>');
+    try{
+      const r=await fetch(ADMIN_CONFIG.QUOTA_PROXY.replace(/\/+$/,"")+"/generate",{
+        method:"POST",headers:proxyHeaders(c.userId),body:JSON.stringify(body)});
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.error||("HTTP "+r.status));
+      const src=d.image||d.dataUrl||(d.images&&d.images[0]);
+      if(!src) throw new Error("响应中没有图片");
+      addImage(src,"共享额度 · 剩余 "+(d.remaining!=null?d.remaining:"—"));
+      if(d.remaining!=null) $("quotaBox").innerHTML="额度 <b>"+d.remaining+"</b> / "+(d.limit||ADMIN_CONFIG.QUOTA_LIMIT);
+    }catch(e){ showStage('<div class="ph">生成失败<br>'+String(e.message).slice(0,120)+'</div>'); msg("生成失败："+e.message,true); }
+    finally{ state.busy=false; $("btnGo").disabled=false; }
+    return;
+  }
+
+  const base=(c.baseUrl||"").trim(), model=(c.model||"").trim(), key=(c.apiKey||"").trim();
+  if(!base||!model||!key){ msg("请先到「设置」填写 Base URL / 模型 / API Key。",true); openModal(); return; }
+  state.busy=true; $("btnGo").disabled=true; showStage('<div class="spin">正在生成…</div>');
+  try{
+    const r=await fetch(base.replace(/\/+$/,"")+"/images/generations",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:model,prompt:body.prompt,size:body.size,
+        quality:body.quality,n:1,response_format:"b64_json"})});
+    const d=await r.json();
+    if(!r.ok) throw new Error((d.error&&d.error.message)||("HTTP "+r.status));
+    const f=(d.data||[])[0]||{};
+    let src="";
+    if(f.b64_json) src="data:image/png;base64,"+f.b64_json;
+    else if(f.url) src=f.url;
+    else if(d.image) src=d.image;
+    if(!src) throw new Error("响应里没找到图片（data[0].b64_json / url）");
+    addImage(src,"我的 API");
+  }catch(e){ showStage('<div class="ph">生成失败<br>'+String(e.message).slice(0,120)+'</div>'); msg("生成失败："+e.message+"（常见：CORS / Key 无效 / 路径不同）",true); }
+  finally{ state.busy=false; $("btnGo").disabled=false; }
+}
+
+function exportJob(){
+  const job={schema:"wb-image-job/1",id:"job-"+Date.now(),createdAt:new Date().toISOString(),
+    intent:$("pName").value.trim(),prompt:buildPrompt(),
+    params:{size:state.size,quality:$("pQuality").value,background:"opaque",mode:"文生图"},
+    refs:state.refs.map((x,i)=>({slot:"image"+(i+1),name:x.name,dataUrl:x.dataUrl})),
+    textLayer:{note:"卖点文字走后期矢量层，不进提示词"},
+    compliance:{warnings:["真实在售商品不得用 AI 虚构外观","场景图通常不能当白底主图"]},
+    handoff:"把这个文件交给 WorkBuddy 会话出图（消耗 WorkBuddy 积分），拿回 result.json 再导入"};
+  const blob=new Blob([JSON.stringify(job,null,2)],{type:"application/json;charset=utf-8"});
+  const u=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=u;a.download="wb-"+job.id+".json";a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
+  msg("任务包已导出：发给 WorkBuddy 会话出图，这一步会消耗 WorkBuddy 积分。");
+}
+function openModal(){
+  const c=cfgGet();
+  $("cfgUser").value=c.userId||""; $("cfgUrl").value=c.baseUrl||"";
+  $("cfgModel").value=c.model||ADMIN_CONFIG.DEFAULT_MODEL; $("cfgKey").value=c.apiKey||"";
+  $("limitText").textContent=ADMIN_CONFIG.QUOTA_LIMIT;
+  setMode(state.mode); $("mask").classList.add("on");
+}
+function closeModal(){ $("mask").classList.remove("on"); }
+
+/* events */
+$("modeSel").onchange=e=>setMode(e.target.value);
+$("modalSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$("btnSave").onclick=()=>{
+  const c=cfgGet();
+  c.userId=$("cfgUser").value.trim(); c.baseUrl=$("cfgUrl").value.trim();
+  c.model=$("cfgModel").value.trim(); c.apiKey=$("cfgKey").value.trim();
+  cfgSet(c); closeModal(); refreshTip(); sync(); msg("设置已保存在本机浏览器");
+};
+$("btnClose").onclick=closeModal;
+$("mask").onclick=e=>{ if(e.target===$("mask")) closeModal(); };
+$("navSettings").onclick=$("iconSettings").onclick=$("btnSettings2").onclick=openModal;
+$("navHelp").onclick=$("iconHelp").onclick=()=>{
+  msg("两种出图：共享额度（管理员统一付费、每人 200）/ 我的 API（各自填 Key）。导出任务包会消耗 WorkBuddy 积分。");
+};
+$("navDownload").onclick=()=>{
+  if(!state.images.length){ msg("还没有生成结果可下载",true); return; }
+  const a=document.createElement("a"); a.href=state.images[state.images.length-1].src;
+  a.download="ecom-image-"+Date.now()+".png"; a.click();
+};
+$("btnGo").onclick=generate;
+$("btnApply").onclick=()=>{ sync(); msg("提示词已由商品信息重新组装"); };
+$("btnJob").onclick=exportJob;
+$("btnClear").onclick=()=>{ state.images=[]; showStage('<div class="ph">点击右下角生成按钮<br>出图后会显示在这里</div>'); $("stageMeta").textContent="—"; };
+$("btnHistory").onclick=()=>msg("本机共有 "+state.images.length+" 张生成记录（历史存各人浏览器本地，不共享）");
+$("sizeSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  $("sizeSeg").querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); state.size=b.dataset.s; $("pSize").value=state.size; sync();
+});
+$("pSize").onchange=e=>{ state.size=e.target.value; sync(); };
+["pQuality","pFormat","pCount","pNeg","modelSel"].forEach(id=>$(id).onchange=sync);
+["bullets","pName","pCat","pSite","pBrand"].forEach(id=>$(id).oninput=sync);
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); state.tab=t.dataset.tab; sync();
+});
+$("countSel").onchange=e=>{ $("pCount").value=e.target.value.replace(/\D/g,"")||"1"; sync(); };
+$("drop").onclick=()=>$("fileRef").click();
+$("drop").ondragover=e=>e.preventDefault();
+$("drop").ondrop=e=>{e.preventDefault();handleFiles(e.dataTransfer.files);};
+$("fileRef").onchange=e=>handleFiles(e.target.files);
+function handleFiles(files){
+  Array.from(files||[]).forEach(f=>{
+    if(!f.type.startsWith("image/")||state.refs.length>=3)return;
+    const rd=new FileReader();
+    rd.onload=()=>{ state.refs.push({name:f.name,dataUrl:rd.result}); renderRefs(); sync(); };
+    rd.readAsDataURL(f);
+  });
+}
+function renderRefs(){
+  $("refs").innerHTML=state.refs.map((r,i)=>
+    '<div class="t"><img src="'+r.dataUrl+'" alt="ref"><button data-i="'+i+'">×</button></div>').join("");
+  $("refs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    state.refs.splice(+b.dataset.i,1); renderRefs(); sync();
+  });
+}
+
+renderRefs(); setMode("quota"); sync();
+</script>
+</body>
+</html>
